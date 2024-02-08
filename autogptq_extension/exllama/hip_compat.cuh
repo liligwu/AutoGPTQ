@@ -4,15 +4,15 @@
 #define _hip_compat_cuh
 
 // Workaround for a bug in hipamd, backported from upstream, this is fixed in ROCm 5.6.
-__device__ __forceinline__ __half __compat_hrcp(__half x) {
-    return __half_raw{
-        static_cast<_Float16>(__builtin_amdgcn_rcph(static_cast<__half_raw>(x).data))};
-}
+// __device__ __forceinline__ __half __compat_hrcp(__half x) {
+//     return __half_raw{
+//         static_cast<_Float16>(__builtin_amdgcn_rcph(static_cast<__half_raw>(x).data))};
+// }
 
-__device__ __forceinline__ __half2 __compat_h2rcp(__half2 x) {
-    return _Float16_2{static_cast<_Float16>(__builtin_amdgcn_rcph(x.x)),
-        static_cast<_Float16>(__builtin_amdgcn_rcph(x.y))};
-}
+// __device__ __forceinline__ __half2 __compat_h2rcp(__half2 x) {
+//     return _Float16_2{static_cast<_Float16>(__builtin_amdgcn_rcph(x.x)),
+//         static_cast<_Float16>(__builtin_amdgcn_rcph(x.y))};
+// }
 
 #define hrcp __compat_hrcp
 #define h2rcp __compat_h2rcp

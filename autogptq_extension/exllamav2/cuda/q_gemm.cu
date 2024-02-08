@@ -1,3 +1,8 @@
+#include <torch/extension.h>
+#include <c10/cuda/CUDAGuard.h>
+#include <ATen/cuda/CUDAContext.h>
+#include <ATen/cuda/CUDABlas.h>
+
 #include "q_gemm.cuh"
 #include "util.cuh"
 #include "matrix_view.cuh"
@@ -125,7 +130,7 @@ void gemm_half_q_half_cuda
         b->reconstruct(temp_dq);
 
         //cublasSetMathMode(cublas_handle, CUBLAS_TENSOR_OP_MATH);
-
+#if 0
         const half alpha = __float2half(1.0f);
         const half beta = clear ? __float2half(0.0f) : __float2half(1.0f);
         cublasHgemm(cublas_handle,
@@ -135,7 +140,16 @@ void gemm_half_q_half_cuda
                     &alpha, temp_dq, size_n,
                             a,       size_k,
                     &beta,  c,       size_n);
-
+#else   
+        float falpha = 1.0f;
+        float fbeta = clear ? 0.0f : 1.0f;
+        at::cuda::blas::gemm<at::Half>(
+                'n', 'n',
+                size_n, size_m, size_k,
+                falpha, reinterpret_cast<at::Half*>(temp_dq), size_n,
+                reinterpret_cast<const at::Half*>(a), size_k,
+                fbeta, reinterpret_cast<at::Half*>(c), size_n);
+#endif
         //const float alpha = 1.0f;
         //const float beta = clear ? 0.0f : 1.0f;
         //cublasSgemmEx(cublas_handle,
